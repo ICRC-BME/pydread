@@ -33,9 +33,7 @@ matrix:
     osx_image: xcode8
     language: generic
     sudo: required
-    before_install:
-      - chmod +x .ci/build_macos_wheels.sh
-      - brew install pyenv
+    before_install: chmod +x .ci/build_macos_wheels.sh
     env:
       - DIST_FOLD=dist
     script: ".ci/build_macos_wheels.sh"
