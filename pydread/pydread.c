@@ -20,7 +20,7 @@ static PyObject *read_d_header(PyObject *self, PyObject *args){
         return NULL;
     }
 
-    fp = fopen(py_file_path,"r");
+    fp = fopen(py_file_path,"rb");
     header = read_header(fp);
 
     sh = map_d_standard_header(header->sh);
@@ -70,7 +70,7 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
     }
 
     // Open the file
-    fp = fopen(py_file_path,"r");
+    fp = fopen(py_file_path,"rb");
 
     // Get the header
     header = read_header(fp);
