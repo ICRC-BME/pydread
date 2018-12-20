@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ICRC-BME/pydread.svg?branch=master)](https://travis-ci.com/ICRC-BME/pydread)
+
 Pydread
 ====
 
