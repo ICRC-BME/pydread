@@ -1,47 +1,6 @@
 
 #include "dlib.h"
 
-// int main(){
-
-// 	si1	*file_path;
-// 	D_HEADER 	*header;
-// 	FILE 	*fp;
-//     ui2 channel_array[2] = {0,1};
-//     ui2 n_channels = 2;
-//     ui2 i;
-
-//     // file_path = "/media/jan_cimbalnik/DATADRIVE2/data-d_fnusa_oragnizace/seeg/seeg-017-130605/Easrec-1306050831.d";
-
-//     file_path = "/home/jan_cimbalnik/Desktop/temp/icveegR4-2454-20170620-060330.d";
-
-
-// 	fp = fopen(file_path,"r");
-
-// 	header = read_header(fp);
-
-//     show_s_header(header->sh);
-//     show_x_header(header->xh);
-
-//     ui8 start_samp = 0;
-//     ui8 stop_samp = 16775000;
-
-//     si4 *data_buffer = (si4 *) malloc(sizeof(si4)*n_channels*(stop_samp-start_samp));
-
-    
-
-//     // read_data(fp,data_buffer,channel_array,n_channels,start_samp,stop_samp);
-//     // for (i=0;i<n_channels*(stop_samp-start_samp);i++){
-//     //     printf("%i\n",*(data_buffer+i));
-//     // }
-
-// 	free(header);
-//     free(data_buffer);
-// 	fclose(fp);
-
-// 	return 0;
-	
-// }
-
 D_HEADER *read_header(FILE *fp){
 
     D_HEADER 	*header;
@@ -52,6 +11,7 @@ D_HEADER *read_header(FILE *fp){
     
     // X_HEADER
     si1     cont;
+    //ui1     mnemo[2];
     ui2     mnemo, field_len, *xhdr_field_buffer;
     ui1     *xhdr_temp_buffer;
     si4     precision;
@@ -96,9 +56,9 @@ D_HEADER *read_header(FILE *fp){
 
     header->sh->data_info = data_info;
 
-    // Fix data_org_fields
+    // Fix data_org_fields -> conversion from paragraphs to bytes (see documentation)
     header->sh->data_org *= 16;
-    header->sh->data_xhdr_org *= 16;
+    header->sh->xhdr_org *= 16;
 
     //----- Extended header -----
     // Allocate temporary buffer
@@ -106,8 +66,8 @@ D_HEADER *read_header(FILE *fp){
     xhdr_temp_buffer = malloc(8192 * sizeof(ui1)); // NOTE: the largest value is list_len
 
     // Read the header fields
-    if (header->sh->data_xhdr_org != 0){
-    	fseek(fp,header->sh->data_xhdr_org,SEEK_SET);
+    if (header->sh->xhdr_org != 0){
+    	fseek(fp,header->sh->xhdr_org,SEEK_SET);
     	cont = 1;
     	while (cont){
     		if (fread(xhdr_field_buffer,sizeof(ui2),2,fp) == 0){
@@ -117,19 +77,25 @@ D_HEADER *read_header(FILE *fp){
     		mnemo = *xhdr_field_buffer;
     		field_len = *(xhdr_field_buffer + 1);
 
-    		// printf("Mnemo is %i\n",mnemo);
+    		// printf("Mnemo is %i, (hex %x)\n",mnemo, mnemo);
     		// printf("Field len is %i\n",field_len);
     		
     		switch (mnemo) {
-    			// case 16725: // Authentication key
+    			case EASXHDR_AUTHENTICATION_KEY_CODE: // Authentication key
+                    header->xh->authentication_key = *(ui4 *) xhdr_temp_buffer;
 
-    			// case 22082: // Block variable list
+                case EASXHDR_BLANK_SPACE_CODE: // Blank space
+                    continue;
 
-    			// case 16707: // Channel attributes
+    			// case EASXHDR_BLOCK_VARIABLE_CODE: // Block variable list
 
-    			// case 18755: // Calibration info
+    			case EASXHDR_CHANNEL_ATTRIBUTES_CODE: // Channel attributes
+                    header->xh->channel_attributes = (si1 *) calloc(sizeof(si1), field_len);
+                    memcpy(header->xh->channel_attributes, (si1 *) xhdr_temp_buffer, field_len);
 
-    			case 20035: // Channel names
+    			// case EASXHDR_CALIBRATION_INFO_CODE: // Calibration info
+
+    			case EASXHDR_CHANNEL_NAMES_CODE: // Channel names
                     
                     if (fread(xhdr_temp_buffer,field_len,1,fp) != 1){
                         printf("Error reading file at %d", __LINE__);
@@ -145,9 +111,10 @@ D_HEADER *read_header(FILE *fp){
                     }
                     continue;
 
-    			// case 17988: // Dispose flags
+    			case EASXHDR_DISPOSE_FLAGS_CODE: // Dispose flags
+                    header->xh->dispose_flags = *(ui4 *) xhdr_temp_buffer;
 
-    			case 18756: // Data info
+    			case EASXHDR_DATA_INFO_CODE: // Data info
                     header->xh->data_info = malloc(field_len);
                     if (fread(header->xh->data_info, field_len, 1, fp) != 1){
                         printf("Error reading file at %d", __LINE__);
@@ -157,27 +124,23 @@ D_HEADER *read_header(FILE *fp){
                     }
                     continue;
 
-                // case 21321: // Suject identificator
-                //     fread(&header->xh->subject_id,field_len,1,fp);
-                //     printf("Subject ID: %i\n",header->xh->subject_id);
-                //     continue;
+                // case EASXHDR_FILE_LINKS_CODE: // File links
 
-    			// case 19526: // File links
+                case EASXHDR_FREQUENCY_OF_SAMPLING_CODE: // Frequency os sampling
+                    header->xh->fractional_sampling_frequency = *(sf4 *) xhdr_temp_buffer;
+                case EASXHDR_PATIENT_ID_CODE: // Patient ID
+                    header->xh->patient_id_number = *(ui4 *) xhdr_temp_buffer;
+                case EASXHDR_PROJECT_NAME_CODE: // Project name
+                    strncpy(header->xh->project_name, (si1 *) xhdr_temp_buffer, PROJECT_NAME_BYTES);
+                // case EASXHDR_R_BLOCK_CODE: // R block
 
-    			// case 21318: // Frequency
-       //              continue;
+                // case EASXHDR_SOURCE_FILE_CODE: // Source file
 
-    			// case 17481: // Patient ID
+                case EASXHDR_TEXT_RECORD_CODE: // Text record
+                    header->xh->text_record = (si1 *) calloc(sizeof(si1), field_len);
+                    strcpy(header->xh->text_record, (si1 *) xhdr_temp_buffer);
 
-    			// case 19024: // Project name
-
-    			// case 16978: // R block
-
-    			// case 18003: // Source file
-
-    			// case 17748: // Text record
-
-    			case 18772: // Time info
+    			case EASXHDR_TIME_INFO_CODE: // Time info
                     if (fread(&header->xh->time_info,field_len,1,fp) != 1){
                         printf("Error reading file at %d", __LINE__);
                         free(xhdr_field_buffer);
@@ -186,7 +149,7 @@ D_HEADER *read_header(FILE *fp){
                     }
                     continue;
 
-    			case 21588: // Tag table
+    			case EASXHDR_TAG_TABLE_CODE: // Tag table
                     if (fread(&header->xh->tag_table_info,sizeof(XH_TT),1,fp) != 1){
                         printf("Error reading file at %d", __LINE__);
                         free(xhdr_field_buffer);
@@ -195,9 +158,10 @@ D_HEADER *read_header(FILE *fp){
                     }
                     continue;
 
-    			// case 22612: // Text extrarec
-
-    			case 0: // Data 
+    			case EASXHDR_TEXT_EXTENSION_CODE: // Text extrarec
+                    header->xh->text_extension_record = (si1 *) calloc(sizeof(si1), field_len);
+                    strcpy(header->xh->text_extension_record, (si1 *) xhdr_temp_buffer);
+    			case EASXHDR_END_CODE: // Data 
     				cont=0;
     				header->sh->data_pos = ftell(fp);
 
@@ -306,14 +270,6 @@ D_HEADER *read_header(FILE *fp){
                 break;
             }
 
-            for (i=0;i<ntags;++i){ // Assigning text to individual tags
-                if (header->xh->tags[i].tag_class == counter){
-                    for (j=0;j<tte->txtlen;++j){
-                        header->xh->tags[i].tag_class_txt[j] = *(xhdr_temp_buffer+j);
-                    }
-                }                    
-            }
-
             counter++;
         }
     }
@@ -324,6 +280,23 @@ D_HEADER *read_header(FILE *fp){
     free(xhdr_field_buffer);
 
     return header;
+}
+
+void free_header_struct(D_HEADER *dh){
+    // free tags
+    if ( dh->xh->tags != NULL)
+        free(dh->xh->tags);
+
+    if ( dh->xh->data_info != NULL)
+        free(dh->xh->data_info);
+
+    if ( dh->xh->text_extension_record != NULL)
+        free(dh->xh->text_extension_record);
+
+    if ( dh->xh->text_record != NULL)
+        free(dh->xh->text_record);
+
+    return;
 }
 
 void show_s_header(S_HEADER *sh){
@@ -346,7 +319,7 @@ void show_s_header(S_HEADER *sh){
     printf("Unit: %u\n",sh->unit);
     printf("Zero: %u\n",sh->zero);
     printf("Data_org: %u\n",sh->data_org);
-    printf("Data_xhdr_org: %i\n",sh->data_xhdr_org);
+    printf("Data_xhdr_org: %i\n",sh->xhdr_org);
     printf("Data position: %i\n",sh->data_pos);
 
     printf("\n*** Data info ***\n");
@@ -379,22 +352,33 @@ void show_x_header(X_HEADER *xh){
             printf("\n");
     }
     printf("\n");
+    printf("Authentication key: %i\n",xh->authentication_key);
+    printf("Dispose flags int: %i\n", xh->dispose_flags);
     printf("Time info: %i\n",xh->time_info);
     printf("Data info: %s\n",xh->data_info);
+    printf("Fractional sampling frequency: %f\n", xh->fractional_sampling_frequency);
+    printf("Patient ID number: %d\n", xh->patient_id_number);
+    printf("Project name:");
+    for (i=0; i<PROJECT_NAME_BYTES; ++i){
+        printf("%c",xh->project_name[i]);
+    }
+    printf("\n");
+    printf("Text record: %s\n", xh->text_record);
+    printf("Text extension record: %s\n", xh->text_extension_record);
     printf("Tag table: \n");
     printf("%i, ",xh->corr_tag_table_info.def_len);
     printf("%i, ",xh->corr_tag_table_info.list_len);
     printf("%lu, ",xh->corr_tag_table_info.def_off);
     printf("%lu\n",xh->corr_tag_table_info.list_off);
 
-    printf("Tags: \n");
-    for (i=0;i<512;++i){
-        if (xh->tags[i].tag_pos == 0)
-            break;
-        
-        printf("tag %i; tag pos: %u, tag class: %u, tag_selected: %u, ",i,xh->tags[i].tag_pos,xh->tags[i].tag_class,xh->tags[i].tag_selected);
-        printf("tag text: ");
-        printf("%s\n",xh->tags[i].tag_class_txt);
+    if ( xh->tags != NULL ){
+        printf("Tags: \n");
+        for (i=0;i<512;++i){
+            if (xh->tags[i].tag_pos == 0)
+                break;
+            
+            printf("tag %i; tag pos: %u, tag class: %u, tag_selected: %u\n",i,xh->tags[i].tag_pos,xh->tags[i].tag_class,xh->tags[i].tag_selected);
+        }
     }
     return;
 }
@@ -430,16 +414,14 @@ si4 prec_bytes(si4 precision){
     }
 }
 
-void read_data(FILE *fp, void *data_buffer, ui2 *channel_ids, ui2 n_channels_to_read, ui8 start_samp, ui8 stop_samp){
+void read_data(FILE *fp, D_HEADER *header, void *data_buffer, ui2 *channel_ids, ui2 n_channels_to_read, ui8 start_samp, ui8 stop_samp){
 
-    D_HEADER *header;
     si4     nb;
     si4     precision;
     ui8 	n_samp, first_sample;
     si4 	i,j;
     void    *temporary_buffer;
 
-    header = read_header(fp);
     precision = get_prec(header->sh);
     nb = prec_bytes(precision);
 

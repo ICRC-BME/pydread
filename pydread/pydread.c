@@ -30,6 +30,10 @@ static PyObject *read_d_header(PyObject *self, PyObject *args){
     PyTuple_SetItem(out_tuple, 0, sh);
     PyTuple_SetItem(out_tuple, 1, xh);
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!
+    // TODO - free the header structures!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     fclose(fp);
 
     return out_tuple; 
@@ -98,7 +102,7 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
         numpy_arr_data = PyArray_GETPTR2(py_array_out, 0, 0);
     }
             
-	read_data(fp,numpy_arr_data,channel_map,n_channels,py_start_samp,py_stop_samp);
+	read_data(fp, header, numpy_arr_data, channel_map, n_channels, py_start_samp, py_stop_samp);
 
 	fclose(fp);
 	free(header);
@@ -125,8 +129,8 @@ PyObject *map_d_standard_header(S_HEADER *sh){
     PyDict_SetItemString(sh_dict,"d_val",Py_BuildValue("B", sh->d_val));
     PyDict_SetItemString(sh_dict,"unit",Py_BuildValue("B", sh->unit));
     PyDict_SetItemString(sh_dict,"zero",Py_BuildValue("H", sh->zero));
-    PyDict_SetItemString(sh_dict,"data_org",Py_BuildValue("H", sh->data_org));
-    PyDict_SetItemString(sh_dict,"data_xhdr_org",Py_BuildValue("h", sh->data_xhdr_org));
+    PyDict_SetItemString(sh_dict,"data_offset",Py_BuildValue("H", sh->data_org));
+    PyDict_SetItemString(sh_dict,"xhdr_offset",Py_BuildValue("h", sh->xhdr_org));
     PyDict_SetItemString(sh_dict,"data_pos",Py_BuildValue("i", sh->data_pos));
     // Map dval
     //d_val = map_d_val(sh->data_info);
@@ -195,4 +199,41 @@ PyObject *map_d_extended_header(D_HEADER *h){
 
     return xh_dict;
 
+}
+
+static PyObject *create_eashdr_dtype()
+{
+    import_array();
+
+    // Numpy array out
+    PyObject    *op;
+    PyArray_Descr    *descr;
+
+    // Build dictionary
+
+    op = Py_BuildValue("[(s, s, i),\
+                         (s, s, i),\
+                         (s, s, i),\
+                         (s, s, i),\
+                         (s, s, i),\
+                         (s, s, i)]",
+
+                       "sign", "S", EASHDR_SIGN_BYTES,
+                       "ftype", "S", 1,
+                       "nchan", "u1", 1,
+                       "naux", "u1", 1,
+                       "fsamp", "u2", 1,
+                       "nasamp", "u4", 1,
+                       "d_val", "b", 1,
+                       "unit", "u1", 1,
+                       "zero", "i2", 1,
+                       "data_org", "u2", 1,
+                       "data_xhdr_org", "i2", 1);
+
+    PyArray_DescrConverter(op, &descr);
+    Py_DECREF(op);
+
+    PyDict_SetItemString(sh_dict,"data_info",map_d_val(sh->data_info));
+
+    return (PyObject *) descr;
 }
