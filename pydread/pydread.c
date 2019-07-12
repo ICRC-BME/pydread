@@ -20,15 +20,23 @@ static PyObject *read_d_header(PyObject *self, PyObject *args){
         return NULL;
     }
 
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
+
     fp = fopen(py_file_path,"rb");
     header = read_header(fp);
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
     sh = map_d_standard_header(header->sh);
     xh = map_d_extended_header(header);
 
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
+
     out_tuple = PyTuple_New(2);
     PyTuple_SetItem(out_tuple, 0, sh);
     PyTuple_SetItem(out_tuple, 1, xh);
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
     // !!!!!!!!!!!!!!!!!!!!!!!!
     // TODO - free the header structures!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -68,10 +76,14 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
     n_channels = (ui2) PyList_Size(py_channel_map);
     channel_map = malloc(sizeof(ui2)*n_channels);
 
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
+
     for (i=0;i<n_channels;++i){
     	temp_item = PyList_GetItem(py_channel_map,i);
     	channel_map[i] = PyLong_AsLong(temp_item);
     }
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
     // Open the file
     fp = fopen(py_file_path,"rb");
@@ -79,8 +91,12 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
     // Get the header
     header = read_header(fp);
 
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
+
     // Get the precision
     precision = get_prec(header->sh);
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
     // Allocate create numpy array with specified dtype
     npy_intp dims[2] = {py_stop_samp-py_start_samp,n_channels};
@@ -101,11 +117,17 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
         py_array_out = PyArray_SimpleNew(2, dims, NPY_INT32);
         numpy_arr_data = PyArray_GETPTR2(py_array_out, 0, 0);
     }
-            
+        
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
+
 	read_data(fp, header, numpy_arr_data, channel_map, n_channels, py_start_samp, py_stop_samp);
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
 	fclose(fp);
 	free(header);
+
+    printf("PYDREAD | function - %s | line - %d\n", __FUNCTION__, __LINE__);
 
 	return py_array_out;
 }
@@ -189,7 +211,6 @@ PyObject *map_d_extended_header(D_HEADER *h){
             PyList_SET_ITEM(tag,0,Py_BuildValue("I",h->xh->tags[i].tag_pos));
             PyList_SET_ITEM(tag,1,Py_BuildValue("H",h->xh->tags[i].tag_class));
             PyList_SET_ITEM(tag,2,Py_BuildValue("H",h->xh->tags[i].tag_selected));
-            PyList_SET_ITEM(tag,3,Py_BuildValue("s",h->xh->tags[i].tag_class_txt));
      
             PyList_SET_ITEM(tag_list,i,tag);
         }
@@ -201,39 +222,39 @@ PyObject *map_d_extended_header(D_HEADER *h){
 
 }
 
-static PyObject *create_eashdr_dtype()
-{
-    import_array();
+// static PyObject *create_eashdr_dtype()
+// {
+//     import_array();
 
-    // Numpy array out
-    PyObject    *op;
-    PyArray_Descr    *descr;
+//     // Numpy array out
+//     PyObject    *op;
+//     PyArray_Descr    *descr;
 
-    // Build dictionary
+//     // Build dictionary
 
-    op = Py_BuildValue("[(s, s, i),\
-                         (s, s, i),\
-                         (s, s, i),\
-                         (s, s, i),\
-                         (s, s, i),\
-                         (s, s, i)]",
+//     op = Py_BuildValue("[(s, s, i),\
+//                          (s, s, i),\
+//                          (s, s, i),\
+//                          (s, s, i),\
+//                          (s, s, i),\
+//                          (s, s, i)]",
 
-                       "sign", "S", EASHDR_SIGN_BYTES,
-                       "ftype", "S", 1,
-                       "nchan", "u1", 1,
-                       "naux", "u1", 1,
-                       "fsamp", "u2", 1,
-                       "nasamp", "u4", 1,
-                       "d_val", "b", 1,
-                       "unit", "u1", 1,
-                       "zero", "i2", 1,
-                       "data_org", "u2", 1,
-                       "data_xhdr_org", "i2", 1);
+//                        "sign", "S", EASHDR_SIGN_BYTES,
+//                        "ftype", "S", 1,
+//                        "nchan", "u1", 1,
+//                        "naux", "u1", 1,
+//                        "fsamp", "u2", 1,
+//                        "nasamp", "u4", 1,
+//                        "d_val", "b", 1,
+//                        "unit", "u1", 1,
+//                        "zero", "i2", 1,
+//                        "data_org", "u2", 1,
+//                        "data_xhdr_org", "i2", 1);
 
-    PyArray_DescrConverter(op, &descr);
-    Py_DECREF(op);
+//     PyArray_DescrConverter(op, &descr);
+//     Py_DECREF(op);
 
-    PyDict_SetItemString(sh_dict,"data_info",map_d_val(sh->data_info));
+//     PyDict_SetItemString(sh_dict,"data_info",map_d_val(sh->data_info));
 
-    return (PyObject *) descr;
-}
+//     return (PyObject *) descr;
+// }

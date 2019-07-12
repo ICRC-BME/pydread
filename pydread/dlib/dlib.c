@@ -11,7 +11,7 @@ D_HEADER *read_header(FILE *fp){
     
     // X_HEADER
     si1     cont;
-    //ui1     mnemo[2];
+    //char     mnemo_str[2];
     ui2     mnemo, field_len, *xhdr_field_buffer;
     ui1     *xhdr_temp_buffer;
     si4     precision;
@@ -77,61 +77,64 @@ D_HEADER *read_header(FILE *fp){
     		mnemo = *xhdr_field_buffer;
     		field_len = *(xhdr_field_buffer + 1);
 
-    		// printf("Mnemo is %i, (hex %x)\n",mnemo, mnemo);
-    		// printf("Field len is %i\n",field_len);
-    		
+            if (field_len != 0 & mnemo != EASXHDR_BLANK_SPACE_CODE){
+                if (fread(xhdr_temp_buffer,field_len,1,fp) != 1){
+                    printf("Error reading file! Exiting...\n");
+                    free(xhdr_field_buffer);
+                    free(xhdr_temp_buffer);
+                    exit(1);
+                }
+            }
+
     		switch (mnemo) {
     			case EASXHDR_AUTHENTICATION_KEY_CODE: // Authentication key
                     header->xh->authentication_key = *(ui4 *) xhdr_temp_buffer;
+                    break;
 
                 case EASXHDR_BLANK_SPACE_CODE: // Blank space
-                    continue;
+                    fseek(fp, field_len, SEEK_CUR);
+                    break;
 
     			// case EASXHDR_BLOCK_VARIABLE_CODE: // Block variable list
 
     			case EASXHDR_CHANNEL_ATTRIBUTES_CODE: // Channel attributes
                     header->xh->channel_attributes = (si1 *) calloc(sizeof(si1), field_len);
                     memcpy(header->xh->channel_attributes, (si1 *) xhdr_temp_buffer, field_len);
+                    break;
 
     			// case EASXHDR_CALIBRATION_INFO_CODE: // Calibration info
 
     			case EASXHDR_CHANNEL_NAMES_CODE: // Channel names
-                    
-                    if (fread(xhdr_temp_buffer,field_len,1,fp) != 1){
-                        printf("Error reading file at %d", __LINE__);
-                        free(xhdr_field_buffer);
-                        free(xhdr_temp_buffer);
-                        exit(1);
-                    }
                     for (i=0; i<field_len; i+=4){
                         for (j=0;j<4;++j){
                             header->xh->channel_names[i/4][j] = *(xhdr_temp_buffer+i+j);
                         }
                         header->xh->channel_names[i/4][j] = 0;
                     }
-                    continue;
+                    break;
 
     			case EASXHDR_DISPOSE_FLAGS_CODE: // Dispose flags
-                    header->xh->dispose_flags = *(ui4 *) xhdr_temp_buffer;
+                    header->xh->dispose_flags = *(ui2 *) xhdr_temp_buffer;
+                    break;
 
     			case EASXHDR_DATA_INFO_CODE: // Data info
                     header->xh->data_info = malloc(field_len);
-                    if (fread(header->xh->data_info, field_len, 1, fp) != 1){
-                        printf("Error reading file at %d", __LINE__);
-                        free(xhdr_field_buffer);
-                        free(xhdr_temp_buffer);
-                        exit(1);
-                    }
-                    continue;
+                    memcpy(header->xh->data_info, (si1 *) xhdr_temp_buffer, field_len);
+                    break;
 
                 // case EASXHDR_FILE_LINKS_CODE: // File links
 
                 case EASXHDR_FREQUENCY_OF_SAMPLING_CODE: // Frequency os sampling
                     header->xh->fractional_sampling_frequency = *(sf4 *) xhdr_temp_buffer;
+                    break;
+
                 case EASXHDR_PATIENT_ID_CODE: // Patient ID
                     header->xh->patient_id_number = *(ui4 *) xhdr_temp_buffer;
+                    break;
+
                 case EASXHDR_PROJECT_NAME_CODE: // Project name
                     strncpy(header->xh->project_name, (si1 *) xhdr_temp_buffer, PROJECT_NAME_BYTES);
+                    break;
                 // case EASXHDR_R_BLOCK_CODE: // R block
 
                 // case EASXHDR_SOURCE_FILE_CODE: // Source file
@@ -139,35 +142,28 @@ D_HEADER *read_header(FILE *fp){
                 case EASXHDR_TEXT_RECORD_CODE: // Text record
                     header->xh->text_record = (si1 *) calloc(sizeof(si1), field_len);
                     strcpy(header->xh->text_record, (si1 *) xhdr_temp_buffer);
+                    break;
 
     			case EASXHDR_TIME_INFO_CODE: // Time info
-                    if (fread(&header->xh->time_info,field_len,1,fp) != 1){
-                        printf("Error reading file at %d", __LINE__);
-                        free(xhdr_field_buffer);
-                        free(xhdr_temp_buffer);
-                        exit(1);
-                    }
-                    continue;
+                    header->xh->time_info = *(ui4 *) xhdr_temp_buffer;
+                    break;
 
     			case EASXHDR_TAG_TABLE_CODE: // Tag table
-                    if (fread(&header->xh->tag_table_info,sizeof(XH_TT),1,fp) != 1){
-                        printf("Error reading file at %d", __LINE__);
-                        free(xhdr_field_buffer);
-                        free(xhdr_temp_buffer);
-                        exit(1);
-                    }
-                    continue;
+                    header->xh->tag_table_info = *(XH_TT *) xhdr_temp_buffer;
+                    break;
 
     			case EASXHDR_TEXT_EXTENSION_CODE: // Text extrarec
                     header->xh->text_extension_record = (si1 *) calloc(sizeof(si1), field_len);
                     strcpy(header->xh->text_extension_record, (si1 *) xhdr_temp_buffer);
+                    break;
+
     			case EASXHDR_END_CODE: // Data 
     				cont=0;
     				header->sh->data_pos = ftell(fp);
+                    break;
 
                 default:
-                    fseek(fp,field_len,SEEK_CUR);
-                    continue;
+                    break;
     		}
 
 
