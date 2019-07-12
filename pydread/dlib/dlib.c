@@ -8,6 +8,7 @@ D_HEADER *read_header(FILE *fp){
 
     // S_HEADER
     ui1 	d_val;
+    ui4     data_pos;
     
     // X_HEADER
     si1     cont;
@@ -77,7 +78,7 @@ D_HEADER *read_header(FILE *fp){
     		mnemo = *xhdr_field_buffer;
     		field_len = *(xhdr_field_buffer + 1);
 
-            if (field_len != 0 & mnemo != EASXHDR_BLANK_SPACE_CODE){
+            if ((field_len != 0) & (mnemo != EASXHDR_BLANK_SPACE_CODE)){
                 if (fread(xhdr_temp_buffer,field_len,1,fp) != 1){
                     printf("Error reading file! Exiting...\n");
                     free(xhdr_field_buffer);
@@ -159,7 +160,7 @@ D_HEADER *read_header(FILE *fp){
 
     			case EASXHDR_END_CODE: // Data 
     				cont=0;
-    				header->sh->data_pos = ftell(fp);
+    				data_pos = ftell(fp);
                     break;
 
                 default:
@@ -169,7 +170,7 @@ D_HEADER *read_header(FILE *fp){
 
     	}
     }else{
-    	header->sh->data_pos = ftell(fp);
+    	data_pos = ftell(fp);
     }
 
     // Fix d-file bugs
@@ -185,7 +186,7 @@ D_HEADER *read_header(FILE *fp){
     header->xh->corr_tag_table_info.def_off = (ui8) header->xh->tag_table_info.def_off;
     header->xh->corr_tag_table_info.list_off = (ui8) header->xh->tag_table_info.list_off;
     
-    while ((header->xh->corr_tag_table_info.def_off < ((si8) header->sh->nchan * header->sh->nsamp * nb) + header->sh->data_org) && (header->xh->corr_tag_table_info.def_off > header->sh->data_pos)){
+    while ((header->xh->corr_tag_table_info.def_off < ((ui8) header->sh->nchan * header->sh->nsamp * nb) + header->sh->data_org) && (header->xh->corr_tag_table_info.def_off > data_pos)){
         header->xh->corr_tag_table_info.def_off += add_number;
         header->xh->corr_tag_table_info.list_off += add_number;
     }
@@ -226,7 +227,7 @@ D_HEADER *read_header(FILE *fp){
             while (cont){
                 cont = 0;
                 for (i=0;i<(header->xh->corr_tag_table_info.list_len/4)-1;++i){
-                    if ((header->xh->tags[i+1].tag_pos - header->xh->tags[i].tag_pos) < 0){
+                    if (((si4) header->xh->tags[i+1].tag_pos - (si4) header->xh->tags[i].tag_pos) < 0){
                         for (j=i+1;j<(header->xh->corr_tag_table_info.list_len/4);++j){
                             header->xh->tags[j].tag_pos += add_number;
                         }
@@ -316,7 +317,6 @@ void show_s_header(S_HEADER *sh){
     printf("Zero: %u\n",sh->zero);
     printf("Data_org: %u\n",sh->data_org);
     printf("Data_xhdr_org: %i\n",sh->xhdr_org);
-    printf("Data position: %i\n",sh->data_pos);
 
     printf("\n*** Data info ***\n");
     printf("Data invalid: %i\n",sh->data_info->data_invalid);
@@ -364,8 +364,8 @@ void show_x_header(X_HEADER *xh){
     printf("Tag table: \n");
     printf("%i, ",xh->corr_tag_table_info.def_len);
     printf("%i, ",xh->corr_tag_table_info.list_len);
-    printf("%lu, ",xh->corr_tag_table_info.def_off);
-    printf("%lu\n",xh->corr_tag_table_info.list_off);
+    printf("%llu, ",xh->corr_tag_table_info.def_off);
+    printf("%llu\n",xh->corr_tag_table_info.list_off);
 
     if ( xh->tags != NULL ){
         printf("Tags: \n");
@@ -415,7 +415,7 @@ void read_data(FILE *fp, D_HEADER *header, void *data_buffer, ui2 *channel_ids, 
     si4     nb;
     si4     precision;
     ui8 	n_samp, first_sample;
-    si4 	i,j;
+    ui4 	i,j;
     void    *temporary_buffer;
 
     precision = get_prec(header->sh);

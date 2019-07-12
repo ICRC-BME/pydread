@@ -101,8 +101,6 @@ typedef struct {
     ui2 data_org;
     si2 xhdr_org;
 
-    si4 data_pos; // TODO: remove this after we are sure we do not need it
-
     D_VAL 	*data_info;
 
 } S_HEADER;
