@@ -153,7 +153,6 @@ PyObject *map_d_standard_header(S_HEADER *sh){
     PyDict_SetItemString(sh_dict,"zero",Py_BuildValue("H", sh->zero));
     PyDict_SetItemString(sh_dict,"data_offset",Py_BuildValue("H", sh->data_org));
     PyDict_SetItemString(sh_dict,"xhdr_offset",Py_BuildValue("h", sh->xhdr_org));
-    PyDict_SetItemString(sh_dict,"data_pos",Py_BuildValue("i", sh->data_pos));
     // Map dval
     //d_val = map_d_val(sh->data_info);
     PyDict_SetItemString(sh_dict,"data_info",map_d_val(sh->data_info));
