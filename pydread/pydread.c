@@ -193,6 +193,14 @@ PyObject *map_d_extended_header(D_HEADER *h){
 
     PyDict_SetItemString(xh_dict,"time_info",Py_BuildValue("I", h->xh->time_info));
     PyDict_SetItemString(xh_dict,"data_info",Py_BuildValue("s", h->xh->data_info));
+    PyDict_SetItemString(xh_dict,"patient_id",Py_BuildValue("I", h->xh->patient_id_number));
+    PyDict_SetItemString(xh_dict,"fractional_sampling_frequency",Py_BuildValue("f", h->xh->fractional_sampling_frequency));
+
+    if (h->xh->project_name[0])
+        PyDict_SetItemString(xh_dict, "project_name",
+            Py_BuildValue("s", h->xh->project_name));
+    else
+        PyDict_SetItemString(xh_dict, "project_name", Py_None);
 
     // Channels
     channel_list = PyList_New(0); // Number of channels could be passed but this hardly matters since it is done only once.
