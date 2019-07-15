@@ -7,19 +7,38 @@
 //     "Module to read .d files.";
 
 static char read_d_header_docstring[] =
-    "Function to read .d file header read_d_header(file_path).";
+    "Function to read .d file header.\n\n\
+     Parameters\n\
+     ----------\n\
+     file_path: str\n\
+         Path to .d file";
 
 static char read_d_data_docstring[] =
-    "Function to read .d file data read_d_data(file_path, channel_map, start_samp, stop_samp).";
+    "Function to read .d file data.\n\n\
+     Parameters\n\
+     ----------\n\
+     file_path: str\n\
+        Path to .d file\n\
+     channel_map: list\n\
+        List of channel indices in int\n\
+     start_samp: int\n\
+        Start sample to read\n\
+     stop_samp: int\n\
+        Stop sample to read";
 
 /* Pyhon object declaration*/
 static PyObject *read_d_header(PyObject *self, PyObject *args);
 static PyObject *read_d_data(PyObject *self, PyObject *args);
 
+/* Numpy structure create functions */
+// static PyObject *create_eashdr_dtype();
+
 /* Specification of the members of the module */
 static PyMethodDef module_methods[] = {
     {"read_d_header", read_d_header, METH_VARARGS, read_d_header_docstring},
     {"read_d_data", read_d_data, METH_VARARGS, read_d_data_docstring},
+
+    //{"create_eashdr_dtype", create_eashdr_dtype, 0, NULL},
     {NULL, NULL, 0, NULL}
 };
 
