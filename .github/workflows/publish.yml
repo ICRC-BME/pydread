@@ -1,5 +1,5 @@
 
-name: Test Pymef
+name: Test Pydread
 
 on: [push, pull_request]
 
@@ -83,7 +83,7 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        twine upload --skip-existing dist/pymef*
+        twine upload --skip-existing dist/pydread*
 
     - name: Publish package (Linux)
       if: startsWith(matrix.os, 'ubuntu')
@@ -91,5 +91,5 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        twine upload --skip-existing dist/pymef*manylinux*
+        twine upload --skip-existing dist/pydread*manylinux*
 
