@@ -10,7 +10,7 @@ DREAD_EXT = Extension("pydread",
                       include_dirs=["pydread/dlib"])
 
 setup(name = "pydread",
-      version='0.0b9',
+      version='0.0a1',
       description='Wrapper of C library for .d file reading',
       url='https://github.com/ICRC-BME/pydread',
       author='Jan Cimbalnik',
