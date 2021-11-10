@@ -23,9 +23,10 @@ D_HEADER *read_header(FILE *fp){
 
 
     // General
-    si4     i,j;
-    ui8     tag_def_post;
-    ui2     counter,ntags;
+    ui1     read_tag_table;
+    si4     i, j;
+    ui8     tag_def_post, sz;
+    ui2     counter, ntags;
 
     // Allocate header - parent function is responsible for deallocation
     header = (D_HEADER *) malloc(sizeof(D_HEADER));
@@ -191,8 +192,23 @@ D_HEADER *read_header(FILE *fp){
         header->xh->corr_tag_table_info.list_off += add_number;
     }
 
-    // Are there nay tags?
+    // Are there any tags? If so, check that we can read them
     if (header->xh->corr_tag_table_info.list_len > 0){
+        fseek(fp, 0, SEEK_END);
+        sz = ftell(fp);
+        if (sz > header->xh->corr_tag_table_info.list_off){
+            read_tag_table = 1;
+        }else{
+            read_tag_table = 0;
+            header->xh->tags = NULL;
+        }
+    }else{
+        read_tag_table = 0;
+        header->xh->tags = NULL;
+    }
+
+    // Read tags if available
+    if (read_tag_table){
 
         // Allocate tags
         ntags = header->xh->corr_tag_table_info.list_len/4;
@@ -201,7 +217,7 @@ D_HEADER *read_header(FILE *fp){
         // Read tag list
         fseek(fp,header->xh->corr_tag_table_info.list_off,SEEK_SET);
         if (fread(xhdr_temp_buffer,header->xh->corr_tag_table_info.list_len,1,fp) != 1){
-            printf("Error reading file at %d", __LINE__);
+            printf("Error reading file at %d\n", __LINE__);
             free(xhdr_field_buffer);
             free(xhdr_temp_buffer);
             exit(1);
@@ -246,10 +262,12 @@ D_HEADER *read_header(FILE *fp){
 
             fseek(fp,tag_def_post,SEEK_SET);
             if (fread(tte,sizeof(TAG_TABLE_ENTRY),1,fp) != 1){
-                printf("Error reading file at %d", __LINE__);
-                free(xhdr_field_buffer);
-                free(xhdr_temp_buffer);
-                exit(1);
+                printf("Error reading tag_table, the end of file reached...\n");
+                break;
+                // printf("Error reading file at %d\n", __LINE__);
+                // free(xhdr_field_buffer);
+                // free(xhdr_temp_buffer);
+                // exit(1);
             }
             // printf("TTE abrv=%c%c\n",tte->abrv[0],tte->abrv[1]);
             // printf("TTE n=%i\n",tte->n);

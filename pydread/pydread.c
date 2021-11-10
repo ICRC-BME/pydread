@@ -188,20 +188,20 @@ PyObject *map_d_extended_header(D_HEADER *h){
     PyDict_SetItemString(xh_dict,"channel_names",channel_list);
 
     // Tags
-
-    tag_list = PyList_New(h->xh->corr_tag_table_info.list_len/4);
-    if (h->xh->corr_tag_table_info.list_len > 0){
-        for (i=0;i<h->xh->corr_tag_table_info.list_len/4;++i){
-            tag = PyList_New(4);
-            PyList_SET_ITEM(tag,0,Py_BuildValue("I",h->xh->tags[i].tag_pos));
-            PyList_SET_ITEM(tag,1,Py_BuildValue("H",h->xh->tags[i].tag_class));
-            PyList_SET_ITEM(tag,2,Py_BuildValue("H",h->xh->tags[i].tag_selected));
-     
-            PyList_SET_ITEM(tag_list,i,tag);
+    if (h->xh->tags != NULL){
+        tag_list = PyList_New(h->xh->corr_tag_table_info.list_len/4);
+        if (h->xh->corr_tag_table_info.list_len > 0){
+            for (i=0;i<h->xh->corr_tag_table_info.list_len/4;++i){
+                tag = PyList_New(3);
+                PyList_SET_ITEM(tag,0,Py_BuildValue("I",h->xh->tags[i].tag_pos));
+                PyList_SET_ITEM(tag,1,Py_BuildValue("H",h->xh->tags[i].tag_class));
+                PyList_SET_ITEM(tag,2,Py_BuildValue("H",h->xh->tags[i].tag_selected));
+         
+                PyList_SET_ITEM(tag_list,i,tag);
+            }
         }
+        PyDict_SetItemString(xh_dict,"tags",tag_list);
     }
-
-    PyDict_SetItemString(xh_dict,"tags",tag_list);
 
     return xh_dict;
 
