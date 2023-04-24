@@ -20,8 +20,13 @@ static PyObject *read_d_header(PyObject *self, PyObject *args){
         return NULL;
     }
 
+    // Open the file   
     fp = fopen(py_file_path,"rb");
-    header = read_header(fp);
+    if (fp == NULL){
+        printf("Error during reading the header! Check if the file path is correct.\n");   
+        exit(1); 
+    };
+    header = read_header(fp);    
 
     sh = map_d_standard_header(header->sh);
     xh = map_d_extended_header(header);
@@ -40,7 +45,7 @@ static PyObject *read_d_header(PyObject *self, PyObject *args){
 
 }
 static PyObject *read_d_data(PyObject *self, PyObject *args){
-
+    
 	si1    *py_file_path;
 	PyObject *py_channel_map;
 	ui8		py_start_samp;
@@ -73,8 +78,12 @@ static PyObject *read_d_data(PyObject *self, PyObject *args){
     	channel_map[i] = PyLong_AsLong(temp_item);
     }
 
-    // Open the file
+    // Open the file    
     fp = fopen(py_file_path,"rb");
+    if(fp == NULL){
+        printf("Error during reading the data! Check if the file path is correct.\n");   
+        exit(1); 
+    };
 
     // Get the header
     header = read_header(fp);

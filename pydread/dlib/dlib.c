@@ -70,8 +70,8 @@ D_HEADER *read_header(FILE *fp){
     // Read the header fields
     if (header->sh->xhdr_org != 0){
     	fseek(fp,header->sh->xhdr_org,SEEK_SET);
-    	cont = 1;
-    	while (cont){
+    	cont = 1;        
+    	while (cont){            
     		if (fread(xhdr_field_buffer,sizeof(ui2),2,fp) == 0){
     			printf("Error reading file! Exiting...\n");
 				exit(1);
@@ -87,7 +87,7 @@ D_HEADER *read_header(FILE *fp){
                     exit(1);
                 }
             }
-
+            
     		switch (mnemo) {
     			case EASXHDR_AUTHENTICATION_KEY_CODE: // Authentication key
                     header->xh->authentication_key = *(ui4 *) xhdr_temp_buffer;
@@ -161,10 +161,9 @@ D_HEADER *read_header(FILE *fp){
 
     			case EASXHDR_END_CODE: // Data 
     				cont=0;
-    				data_pos = ftell(fp);
+    				data_pos = ftell(fp);                    
                     break;
-
-                default:
+                default:                    
                     break;
     		}
 
@@ -207,7 +206,7 @@ D_HEADER *read_header(FILE *fp){
         header->xh->tags = NULL;
     }
 
-    // Read tags if available
+    // Read tags if available        
     if (read_tag_table){
 
         // Allocate tags
@@ -216,6 +215,8 @@ D_HEADER *read_header(FILE *fp){
 
         // Read tag list
         fseek(fp,header->xh->corr_tag_table_info.list_off,SEEK_SET);
+        free(xhdr_temp_buffer);
+        xhdr_temp_buffer = malloc(header->xh->corr_tag_table_info.list_len * sizeof(ui1));
         if (fread(xhdr_temp_buffer,header->xh->corr_tag_table_info.list_len,1,fp) != 1){
             printf("Error reading file at %d\n", __LINE__);
             free(xhdr_field_buffer);
@@ -436,7 +437,7 @@ void read_data(FILE *fp, D_HEADER *header, void *data_buffer, ui2 *channel_ids, 
     ui4 	i,j;
     void    *temporary_buffer;
 
-    precision = get_prec(header->sh);
+    precision = get_prec(header->sh);    
     nb = prec_bytes(precision);
 
     n_samp = stop_samp - start_samp;
@@ -474,9 +475,9 @@ void read_data(FILE *fp, D_HEADER *header, void *data_buffer, ui2 *channel_ids, 
         }
     }
     else if (precision == PREC_SI4){
-        temporary_buffer = malloc(sizeof(si4)*header->sh->nchan);
+        temporary_buffer = malloc(sizeof(si4)*header->sh->nchan);        
         for (i=0;i<n_samp;++i){
-            if (fread(temporary_buffer, nb, header->sh->nchan, fp) == 0){
+            if (fread(temporary_buffer, nb, header->sh->nchan, fp) == 0){                
                 printf("Error reading data! Exiting...\n");
                 exit(1);
             }

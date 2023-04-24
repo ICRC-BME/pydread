@@ -1,0 +1,9 @@
+LICENSE.txt
+setup.py
+pydread/pydread.c
+pydread.egg-info/PKG-INFO
+pydread.egg-info/SOURCES.txt
+pydread.egg-info/dependency_links.txt
+pydread.egg-info/not-zip-safe
+pydread.egg-info/requires.txt
+pydread.egg-info/top_level.txt

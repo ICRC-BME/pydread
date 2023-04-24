@@ -1,0 +1,22 @@
+Metadata-Version: 2.1
+Name: pydread
+Version: 0.0a1
+Summary: Wrapper of C library for .d file reading
+Home-page: https://github.com/ICRC-BME/pydread
+Author: Jan Cimbalnik
+Author-email: jan.cimbalnik@fnusa.cz, jan.cimbalnik@mayo.edu
+License: Apache 2.0
+Keywords: electrophysiology
+Platform: Linux
+Platform: MacOSX
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 4 - Beta
+Classifier: Topic :: Scientific/Engineering
+License-File: LICENSE.txt
+
+UNKNOWN
+

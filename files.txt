@@ -1,0 +1,13 @@
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/bin/f2py
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/bin/f2py3
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/bin/f2py3.10
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/PKG-INFO
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/SOURCES.txt
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/dependency_links.txt
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/native_libs.txt
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/not-zip-safe
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/requires.txt
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/EGG-INFO/top_level.txt
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/__pycache__/pydread.cpython-310.pyc
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/pydread.cpython-310-x86_64-linux-gnu.so
+/home/patrik/Desktop/CEITEC/C_processing/pydread_develop/pydrenv/lib/python3.10/site-packages/pydread-0.0a1-py3.10-linux-x86_64.egg/pydread.py

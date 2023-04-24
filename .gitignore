@@ -77,3 +77,6 @@ test_session/
 
 # My notes
 my_notes.txt
+
+# Running scripts
+runtest.sh
